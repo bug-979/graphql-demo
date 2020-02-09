@@ -42,8 +42,11 @@ class GraphQLCommand extends Command
         $this->saveStub('config', $configPath);
         $this->saveStub('route', $routePath);
 
-        $this->saveStub('example.querytype', Env::get('app_path') . '/http/graph/QueryType.php');
-        $this->saveStub('example.usertype', Env::get('app_path') . '/http/graph/User/UserType.php');
+        $this->saveStub('example.querytype', Env::get('app_path') . '/http/graph/Query.php');
+        $this->saveStub('example.mutationtype', Env::get('app_path') . '/http/graph/Mutation.php');
+        $this->saveFile(Env::get('app_path') . '/http/graph/Mutation');
+        $this->saveFile(Env::get('app_path') . '/http/graph/Query');
+        $this->saveFile(Env::get('app_path') . '/http/graph/Type');
 
         $output->writeln("Initialization completed!");
     }
@@ -93,6 +96,12 @@ class GraphQLCommand extends Command
             $stub = $processer($stub);
         }
         file_put_contents($to, $stub);
+    }
+
+    protected function saveFile ($to) {
+        if (!is_dir(dirname($to))) {
+            mkdir(dirname($to), 0755, true);
+        }
     }
 
     protected function getStubPath($filename)
