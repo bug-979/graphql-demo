@@ -5,7 +5,7 @@ $graphConfig = config('graph.');
 
 // 处理中间件
 $middleware = [
-    \smilecc\think\GraphQLMiddleware::class
+    \tomorrow\think\GraphQLMiddleware::class
 ];
 // 处理配置中的中间件
 if (array_key_exists('middleware', $graphConfig)) {
