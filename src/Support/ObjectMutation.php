@@ -14,18 +14,6 @@ class ObjectMutation extends GraphQLObjectType
         // 获取属性
         $attrs = $this->getAttrs($args);
         $self = $this;
-        /*$detail = [
-            'detail' => [
-                'type' => Types::company('type'),
-                'desc' => '根据ID查询',
-                'args' => [
-                    'id' => [
-                        'type' => Types::int(),
-                        'desc' => 'ID'
-                    ],
-                ],
-            ],
-        ];*/
 
         $config = [
             'name' => $attrs['name'],
@@ -36,7 +24,6 @@ class ObjectMutation extends GraphQLObjectType
                     $fields = array_merge($self->fields(), $args['fields']);
                 } else {
                     $fields = $self->fields();
-//                    var_dump($fields);
                 }
                 foreach ($fields as $key => &$field) {
                     if (is_array($field)) {
@@ -103,14 +90,11 @@ class ObjectMutation extends GraphQLObjectType
 
     public function fields()
     {
-        return $this::field();
+        return [];
     }
 
     public function fieldsMap()
     {
-        return [];
-    }
-    public static function field () {
         return [];
     }
 }

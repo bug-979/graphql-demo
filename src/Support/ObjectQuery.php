@@ -97,14 +97,11 @@ class ObjectQuery extends GraphQLObjectType
 
     public function fields()
     {
-        return $this::field();
+        return [];
     }
 
     public function fieldsMap()
     {
-        return [];
-    }
-    public static function field () {
         return [];
     }
 
@@ -119,12 +116,8 @@ class ObjectQuery extends GraphQLObjectType
                         'desc' => 'ID'
                     ],
                 ],
-                'resolve' => function ($val,$args) {
-//                    return Db::name($fieldName)->where('id',$args['id'])->select();
-                    return [
-                        'id' => '1',
-                        'title' => $args['id'],
-                    ];
+                'resolve' => function ($val, $args) use ($fieldName) {
+                    return Db::name($fieldName)->where('id', $args['id'])->find();
                 },
             ],
         ];

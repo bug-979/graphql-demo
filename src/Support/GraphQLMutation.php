@@ -90,14 +90,11 @@ class GraphQLMutation extends GraphQLObjectType
 
     public function fields()
     {
-        return $this::field();
+        return [];
     }
 
     public function fieldsMap()
     {
-        return [];
-    }
-    public static function field () {
         return [];
     }
 }
