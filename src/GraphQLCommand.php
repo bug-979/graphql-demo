@@ -99,8 +99,8 @@ class GraphQLCommand extends Command
     }
 
     protected function saveFile ($to) {
-        if (!is_dir(dirname($to))) {
-            mkdir(dirname($to), 0755, true);
+        if (is_dir(dirname($to))) {
+            mkdir($to, 0755, true);
         }
     }
 
