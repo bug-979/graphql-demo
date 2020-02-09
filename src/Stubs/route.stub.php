@@ -18,5 +18,5 @@ if (array_key_exists('middleware', $graphConfig)) {
     }
 }
 
-Route::any($graphConfig['routePrefix'] . ':action','\smilecc\think\GraphQLController@action')
+Route::any($graphConfig['routePrefix'] . ':action','\tomorrow\think\GraphQLController@action')
     ->middleware($middleware);
