@@ -3,8 +3,8 @@
 
 namespace tomorrow\think;
 
-use smilecc\think\GraphQLMiddleware;
-use smilecc\think\Support\Types;
+use tomorrow\think\GraphQLMiddleware;
+use tomorrow\think\Support\Types;
 use \GraphQL\Type\Schema;
 use \GraphQL\GraphQL;
 
