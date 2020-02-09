@@ -1,7 +1,7 @@
 <?php
 
 use \think\facade\Env;
-use \smilecc\think\Tools\Tools;
+use \tomorrow\think\Tools\Tools;
 
 $typeConfig = [
     // 类型注册表
