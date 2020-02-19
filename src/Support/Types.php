@@ -1,6 +1,7 @@
 <?php
 namespace tomorrow\think\Support;
 
+use \GraphQL\Type\Definition\ObjectType;
 use \GraphQL\Type\Definition\Type;
 use \GraphQL\Type\Definition\NonNull;
 use \GraphQL\Type\Definition\ListOfType;
@@ -74,7 +75,6 @@ class Types
             throw new \Exception("Type '{$typeName}' 中不存在指令 {$directive}", 1);
         }
         return self::$typeList[$typeListKey] = new $typeClassList[$directive]($arguments);
-//        var_dump(self::$typeList[$typeListKey] = new $typeClassList[$directive]($arguments));
     }
 
     public static function boolean()
@@ -110,5 +110,36 @@ class Types
     public static function listOf($type)
     {
         return new ListOfType($type);
+    }
+
+    /**
+     * @param $type
+     * @return ObjectType
+     * 分页类型
+     */
+    public static function paging ($type) {
+        return new ObjectType([
+            'name' => 'Paging',
+            'description' => '分页',
+            'fields' => [
+                'paging' => [
+                    'type' => Type::listOf($type),
+                    'desc' => '分页',
+                ],
+                'page' => [
+                    'type' => Type::int(),
+                    'desc' => '页码',
+                    'defaultValue' => 1
+                ],
+                'limit' => [
+                    'type' => Type::int(),
+                    'desc' => '限制',
+                ],
+                'total' => [
+                    'type' => Type::int(),
+                    'desc' => '总数',
+                ],
+            ],
+        ]);
     }
 }
