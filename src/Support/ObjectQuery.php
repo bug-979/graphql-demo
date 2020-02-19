@@ -16,6 +16,20 @@ class ObjectQuery extends GraphQLObjectType
         $attrs = $this->getAttrs($args);
         $self = $this;
 
+        //分页数组
+        $paging = [
+            'page' => [
+                'type' => Types::int(),
+                'description' => '页码',
+                'defaultValue' => 1
+            ],
+            'limit' => [
+                'type' => Types::int(),
+                'description' => '限制',
+                'defaultValue' => 10
+            ],
+        ];
+
         $config = [
             'name' => $attrs['name'],
             'description' => $attrs['desc'],
@@ -67,6 +81,21 @@ class ObjectQuery extends GraphQLObjectType
                 $methodName = "resolve" . str_replace('_', '', $fieldName);
 
                 if (method_exists($this, $methodName)) {
+                    $fieds = $this->fields();
+                    foreach ($fieds as $key => $val) {
+                        if (is_array($val)) {
+                            if ($val['type']->name === 'Paging') {
+                                return [
+                                    'page' => $args['page'],
+                                    'limit' => $args['limit'],
+                                    'total' => $this->{$methodName}($val, $args, $context, $info)['total'],
+                                    'paging' => $this->{$methodName}($val, $args, $context, $info)['data'],
+                                ];
+                            } else {
+                                return $this->{$methodName}($val, $args, $context, $info);
+                            }
+                        }
+                    }
                     return $this->{$methodName}($val, $args, $context, $info);
                 } else {
                     return array_key_exists($fieldName, $val) ? $val[$fieldName] : null;
