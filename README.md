@@ -28,3 +28,4 @@ $ php think graph init
 
 运行该命令之后如果提示初始化成功，则可以在`/config/graph.php`看到生成出的配置文件，以及在`/application/http/graph`文件夹下生成出的实例项目。
 
+在初始化完毕之后，你可以使用GraphQL的测试工具请求`http://localhost/api/gql`进行尝试，正确安装的情况下会有如下的响应。
