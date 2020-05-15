@@ -10,13 +10,14 @@ $ composer require bug-979/graphql-demo:dev-master
 
 ## 使用
 
-首先需要在`/application/command.php`中增加一个指令。
+首先需要在`/application/command.php`中增加两个指令。
 
 ```php
 <?php
 
 return [
-    'tomorrow\think\GraphQLCommand'
+    'tomorrow\think\GraphQLCommand',
+    'tomorrow\think\SynchFields'
 ];
 ```
 
@@ -24,6 +25,11 @@ return [
 
 ```bash
 $ php think graph init
+```
+
+自动生成Schema(请先建立好数据库)
+```bash
+$ php think SynchFields
 ```
 
 运行该命令之后如果提示初始化成功，则可以在`/config/graph.php`看到生成出的配置文件，以及在`/application/http/graph`文件夹下生成出的实例项目。
