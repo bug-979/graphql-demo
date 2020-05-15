@@ -4,6 +4,8 @@
 namespace tomorrow\think\Tools;
 
 
+use think\facade\Cache;
+use think\Validate;
 use tomorrow\think\Support\Types;
 use think\Db;
 
@@ -28,25 +30,22 @@ class Tools
 
 
     /**
-     * @param $tableName
+     * @param string $tableName 表名
      * @return array
      * 生成Type
      */
     public static function fieldType($tableName)
     {
-        $sql = "select column_name, column_comment,data_type from INFORMATION_SCHEMA.Columns where table_name='$tableName'";
-        $data = Db::query($sql);
-        if (empty($data)) {
-            self::gqlErrors(''.$tableName.'数据表不存在','500');
+        //获取缓存
+        $field = Cache::get($tableName);
+        if ($field) {
+            foreach ($field as $key => $val) {
+                $field[$key]['type'] = Types::{strtolower($val['type']->name)}();
+            }
+            return $field;
+        } else {
+            self::gqlErrors('数据表不存在',500);
         }
-        $field = [];
-        foreach ($data as $key => $val) {
-            $field[$val['column_name']] = [
-                'type' => self::analysis($val['data_type']),
-                'desc' => '测试',
-            ];
-        }
-        return $field;
     }
 
     /**
@@ -79,5 +78,13 @@ class Tools
     public static function addField ($tableName,$field) {
         $fieldArray = self::fieldType($tableName);
         return array_merge($fieldArray,$field);
+    }
+
+    /**
+     * @param $columnName
+     * @return \GraphQL\Type\Definition\BooleanType|\GraphQL\Type\Definition\IntType|\GraphQL\Type\Definition\StringType
+     */
+    public static function analysisColumn ($columnName) {
+        return self::analysis($columnName);
     }
 }
