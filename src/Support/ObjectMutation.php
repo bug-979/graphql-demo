@@ -1,8 +1,11 @@
 <?php
+
 namespace tomorrow\think\Support;
 
 use \GraphQL\Type\Definition\ResolveInfo;
 use \GraphQL\Type\Definition\ObjectType as GraphQLObjectType;
+use think\Validate;
+use tomorrow\think\Tools\Tools;
 
 class ObjectMutation extends GraphQLObjectType
 {
@@ -43,7 +46,19 @@ class ObjectMutation extends GraphQLObjectType
                 }
                 return $fields;
             },
-            'resolveField' => function($val, $args, $context, ResolveInfo $info) {
+            'resolveField' => function ($val, $args, $context, ResolveInfo $info) {
+                //字段验证
+                if (method_exists($this, 'validate')) {
+                    $rule = $this->validate();
+                    if (isset($rule['message'])) {
+                        $validate = Validate::make($rule['rule'], $rule['message']);
+                    } else {
+                        $validate = Validate::make($rule['rule']);
+                    }
+                    if (!$validate->check($args)) {
+                        Tools::gqlErrors($validate->getError(), 500);
+                    }
+                }
                 // 如果定义了resolveField则使用它
                 if (method_exists($this, 'resolveField')) {
                     return $this->resolveField($val, $args, $context, $info);
