@@ -1,4 +1,5 @@
 <?php
+
 namespace tomorrow\think\Support;
 
 use \GraphQL\Type\Definition\ResolveInfo;
@@ -14,27 +15,16 @@ class ObjectType extends GraphQLObjectType
         // 获取属性
         $attrs = $this->getAttrs($args);
         $self = $this;
-        //时间
-        $time = [
-            'create_time' => [
-                'type' => Types::string(),
-                'desc' => '创建时间'
-            ],
-            'update_time' => [
-                'type' => Types::string(),
-                'desc' => '更新时间'
-            ],
-        ];
 
         $config = [
             'name' => $attrs['name'],
             'description' => $attrs['desc'],
-            'fields' => function () use ($self, $args,$time) {
+            'fields' => function () use ($self, $args) {
                 // 判断是否从args传入
                 if (array_key_exists('fields', $args)) {
                     $fields = array_merge($self->fields(), $args['fields']);
                 } else {
-                    $fields = array_merge($self->fields(),$time);
+                    $fields = $self->fields();
                 }
                 foreach ($fields as $key => &$field) {
                     if (is_array($field)) {
@@ -54,7 +44,7 @@ class ObjectType extends GraphQLObjectType
                 }
                 return $fields;
             },
-            'resolveField' => function($val, $args, $context, ResolveInfo $info) {
+            'resolveField' => function ($val, $args, $context, ResolveInfo $info) {
                 // 如果定义了resolveField则使用它
                 if (method_exists($this, 'resolveField')) {
                     return $this->resolveField($val, $args, $context, $info);
