@@ -1,9 +1,12 @@
 <?php
+
 namespace tomorrow\think\Support;
 
 use \GraphQL\Type\Definition\ResolveInfo;
 use \GraphQL\Type\Definition\ObjectType as GraphQLObjectType;
 use think\Db;
+use think\Validate;
+use tomorrow\think\Tools\Tools;
 
 class ObjectQuery extends GraphQLObjectType
 {
@@ -16,7 +19,6 @@ class ObjectQuery extends GraphQLObjectType
         $attrs = $this->getAttrs($args);
         $self = $this;
 
-        //分页数组
         $paging = [
             'page' => [
                 'type' => Types::int(),
@@ -27,24 +29,20 @@ class ObjectQuery extends GraphQLObjectType
                 'type' => Types::int(),
                 'description' => '限制',
                 'defaultValue' => 10
-            ],
+            ]
         ];
 
         $config = [
             'name' => $attrs['name'],
             'description' => $attrs['desc'],
-            'fields' => function () use ($self, $args,$attrs) {
+            'fields' => function () use ($self, $args, $attrs, $paging) {
                 // 判断是否从args传入
                 if (array_key_exists('fields', $args)) {
                     $fields = array_merge($self->fields(), $args['fields']);
                 } else {
-                    $fieldsObj = $self->fields();
-                    foreach ($fieldsObj as $key => $val) {
-                        $fieldName = lcfirst($val['type']->name);
-                    }
-                    //默认生成根据ID查询；
+                    //默认生成根据ID查询;
                     $detail = $self->detail(lcfirst($attrs['name']));
-                    $fields = array_merge($self->fields(),$detail);
+                    $fields = array_merge($self->fields(), $detail);
                 }
                 foreach ($fields as $key => &$field) {
                     if (is_array($field)) {
@@ -61,10 +59,41 @@ class ObjectQuery extends GraphQLObjectType
                             }
                         }
                     }
+                    //判断是否是分页类型
+                    if ($field['type']->name === 'Paging') {
+                        if (array_key_exists('args', $field) && is_array($field['args'])) {
+                            $field['args'] = array_merge($field['args'], $paging);
+                        } else {
+                            $field['args'] = [
+                                'page' => [
+                                    'type' => Types::int(),
+                                    'desc' => '页码',
+                                    'defaultValue' => 1
+                                ],
+                                'limit' => [
+                                    'type' => Types::int(),
+                                    'desc' => '限制',
+                                    'defaultValue' => 10
+                                ]
+                            ];
+                        }
+                    }
                 }
                 return $fields;
             },
-            'resolveField' => function($val, $args, $context, ResolveInfo $info) {
+            'resolveField' => function ($val, $args, $context, ResolveInfo $info) {
+                //字段验证
+                if (method_exists($this, 'validate')) {
+                    $rule = $this->validate();
+                    if (isset($rule['message'])) {
+                        $validate = Validate::make($rule['rule'], $rule['message']);
+                    } else {
+                        $validate = Validate::make($rule['rule']);
+                    }
+                    if (!$validate->check($args)) {
+                        Tools::gqlErrors($validate->getError(), 500);
+                    }
+                }
                 // 如果定义了resolveField则使用它
                 if (method_exists($this, 'resolveField')) {
                     return $this->resolveField($val, $args, $context, $info);
@@ -82,14 +111,21 @@ class ObjectQuery extends GraphQLObjectType
 
                 if (method_exists($this, $methodName)) {
                     $fieds = $this->fields();
-                    foreach ($fieds as $key => $val) {
-                        if (is_array($val)) {
-                            if ($val['type']->name === 'Paging') {
+                    foreach ($fieds as $key => $item) {
+                        if (is_array($item)) {
+                            if ($item['type']->name === 'Paging') {
+                                $redata = $this->{$methodName}($val, $args, $context, $info);
+                                if (!array_key_exists('total', $redata) || empty($redata['total'])) {
+                                    Tools::gqlErrors('total required?', 500);
+                                }
+                                if (!array_key_exists('data', $redata) || !is_array($redata)) {
+                                    Tools::gqlErrors('data required?', 500);
+                                }
                                 return [
                                     'page' => $args['page'],
                                     'limit' => $args['limit'],
-                                    'total' => $this->{$methodName}($val, $args, $context, $info)['total'],
-                                    'paging' => $this->{$methodName}($val, $args, $context, $info)['data'],
+                                    'total' => $redata['total'],
+                                    'paging' => $redata['data'],
                                 ];
                             } else {
                                 return $this->{$methodName}($val, $args, $context, $info);
@@ -134,10 +170,11 @@ class ObjectQuery extends GraphQLObjectType
         return [];
     }
 
-    public function detail ($fieldName) {
+    public function detail($fieldName)
+    {
         return [
             'detail' => [
-                'type' => Types::$fieldName('type'),
+                'type' => Types::{$fieldName}('type'),
                 'desc' => '根据ID查询',
                 'args' => [
                     'id' => [
