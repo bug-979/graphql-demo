@@ -16,9 +16,9 @@ class Tools
      * @param string $message 返回内容
      * @param integer $code HTTP状态码
      */
-    public static function gqlErrors($message, $code)
+    public static function gqlErrors($message, $code = 500)
     {
-        header('Content-type: application/json', true, 500);
+        header('Content-type: application/json', true, $code);
         echo json_encode([
             'errors' => [
                 'message' => $message,
