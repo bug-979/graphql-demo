@@ -44,7 +44,7 @@ class Tools
             }
             return $field;
         } else {
-            self::gqlErrors('数据表不存在',500);
+            self::gqlErrors('数据表'.$tableName.'不存在',500);
         }
     }
 
