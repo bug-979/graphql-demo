@@ -1,10 +1,13 @@
 <?php
+
 namespace tomorrow\think\Support;
 
 use \GraphQL\Type\Definition\ObjectType;
 use \GraphQL\Type\Definition\Type;
 use \GraphQL\Type\Definition\NonNull;
 use \GraphQL\Type\Definition\ListOfType;
+use \GraphQL\Type\Definition\CustomScalarType;
+use tomorrow\think\Tools\Tools;
 
 class Types
 {
@@ -12,11 +15,12 @@ class Types
     protected static $config;
     // 存储已经生成的type
     protected static $typeList = [];
+    //分页
+    protected static $paging = [];
 
     public static function __callStatic($name, $arguments)
     {
         self::$config = config('graph.');
-
         if (count($arguments) > 0) {
             $typeConfig = [];
             $typeName = $name;
@@ -29,7 +33,6 @@ class Types
                     $typeName = $typeConfig['name'];
                 }
             }
-
             return self::getType($name, $typeName, $arguments[0], $typeConfig);
         } else {
             return self::getType($name, $name, 'type', []);
@@ -117,29 +120,35 @@ class Types
      * @return ObjectType
      * 分页类型
      */
-    public static function paging ($type) {
-        return new ObjectType([
-            'name' => 'Paging',
-            'description' => '分页',
-            'fields' => [
-                'paging' => [
-                    'type' => Type::listOf($type),
-                    'desc' => '分页',
+    public static function paging($type)
+    {
+        if (array_key_exists('paging', self::$paging)) {
+            return self::$paging['paging'];
+        } else {
+            self::$paging['paging'] = new ObjectType([
+                'name' => 'Paging',
+                'description' => '分页',
+                'fields' => [
+                    'paging' => [
+                        'type' => Type::listOf($type),
+                        'description' => '分页',
+                    ],
+                    'page' => [
+                        'type' => Type::int(),
+                        'description' => '页码',
+                        'defaultValue' => 1
+                    ],
+                    'limit' => [
+                        'type' => Type::int(),
+                        'description' => '限制',
+                    ],
+                    'total' => [
+                        'type' => Type::int(),
+                        'description' => '总数',
+                    ],
                 ],
-                'page' => [
-                    'type' => Type::int(),
-                    'desc' => '页码',
-                    'defaultValue' => 1
-                ],
-                'limit' => [
-                    'type' => Type::int(),
-                    'desc' => '限制',
-                ],
-                'total' => [
-                    'type' => Type::int(),
-                    'desc' => '总数',
-                ],
-            ],
-        ]);
+            ]);
+            return self::$paging['paging'];
+        }
     }
 }
