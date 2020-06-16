@@ -31,7 +31,7 @@ class SynchFields extends Command
             //遍历出表里的字段
             foreach ($data as $key => $val) {
                 $table_name = $val['table_name'];
-                $sqlColumn = "select column_name, column_comment,data_type from INFORMATION_SCHEMA.Columns where table_name='$table_name'";
+                $sqlColumn = "select column_name, column_comment,data_type from INFORMATION_SCHEMA.Columns where table_name='$table_name' and table_schema='$tableName'";
                 $columnName = Db::query($sqlColumn);
                 if (empty($columnName)) {
                     $output->writeln('synch fail');
