@@ -115,18 +115,22 @@ class ObjectQuery extends GraphQLObjectType
                         if (is_array($item)) {
                             if ($item['type']->name === 'Paging') {
                                 $redata = $this->{$methodName}($val, $args, $context, $info);
-                                if (!array_key_exists('total', $redata) || empty($redata['total'])) {
-                                    Tools::gqlErrors('total required?', 500);
+                                if ($redata && is_array($redata)) {
+                                    if (!array_key_exists('total', $redata) || empty($redata['total'])) {
+                                        Tools::gqlErrors('total required?', 500);
+                                    }
+                                    if (!array_key_exists('data', $redata) || !is_array($redata)) {
+                                        Tools::gqlErrors('data required?', 500);
+                                    }
+                                    return [
+                                        'page' => $args['page'],
+                                        'limit' => $args['limit'],
+                                        'total' => $redata['total'],
+                                        'paging' => $redata['data'],
+                                    ];
+                                } else {
+                                    return null;
                                 }
-                                if (!array_key_exists('data', $redata) || !is_array($redata)) {
-                                    Tools::gqlErrors('data required?', 500);
-                                }
-                                return [
-                                    'page' => $args['page'],
-                                    'limit' => $args['limit'],
-                                    'total' => $redata['total'],
-                                    'paging' => $redata['data'],
-                                ];
                             } else {
                                 return $this->{$methodName}($val, $args, $context, $info);
                             }
