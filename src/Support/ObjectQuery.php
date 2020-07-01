@@ -60,7 +60,8 @@ class ObjectQuery extends GraphQLObjectType
                         }
                     }
                     //判断是否是分页类型
-                    if ($field['type']->name === 'Paging') {
+                    $pagingKey = substr($field['type']->name, -6);
+                    if ($pagingKey === 'Paging') {
                         if (array_key_exists('args', $field) && is_array($field['args'])) {
                             $field['args'] = array_merge($field['args'], $paging);
                         } else {
@@ -113,7 +114,8 @@ class ObjectQuery extends GraphQLObjectType
                     $fieds = $this->fields();
                     foreach ($fieds as $key => $item) {
                         if (is_array($item)) {
-                            if ($item['type']->name === 'Paging') {
+                            $pagingKey = substr($item['type']->name, -6);
+                            if ($pagingKey === 'Paging') {
                                 $redata = $this->{$methodName}($val, $args, $context, $info);
                                 if ($redata && is_array($redata)) {
                                     if (!array_key_exists('total', $redata) || empty($redata['total'])) {

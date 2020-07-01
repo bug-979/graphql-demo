@@ -122,11 +122,11 @@ class Types
      */
     public static function paging($type)
     {
-        if (array_key_exists('paging', self::$paging)) {
-            return self::$paging['paging'];
+        if (array_key_exists($type->name, self::$paging)) {
+            return self::$paging[$type->name];
         } else {
-            self::$paging['paging'] = new ObjectType([
-                'name' => 'Paging',
+            self::$paging[$type->name] = new ObjectType([
+                'name' => $type->name . 'Paging',
                 'description' => '分页',
                 'fields' => [
                     'paging' => [
@@ -148,7 +148,7 @@ class Types
                     ],
                 ],
             ]);
-            return self::$paging['paging'];
+            return self::$paging[$type->name];
         }
     }
 }
