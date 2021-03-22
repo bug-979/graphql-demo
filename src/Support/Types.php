@@ -135,16 +135,15 @@ class Types
                     ],
                     'page' => [
                         'type' => Type::int(),
-                        'description' => '页码',
-                        'defaultValue' => 1
+                        'description' => '页码'
                     ],
                     'limit' => [
                         'type' => Type::int(),
-                        'description' => '限制',
+                        'description' => '限制'
                     ],
                     'total' => [
                         'type' => Type::int(),
-                        'description' => '总数',
+                        'description' => '总数'
                     ],
                 ],
             ]);

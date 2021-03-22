@@ -20,19 +20,21 @@ class Buffer
     private static $bufferID = [];
 
     /**
-     * 累计调用次数
-     * @var int
+     * 每个关联累计调用次数
+     * @var array
      */
-    private static $num = 0;
+    private static $num = [];
 
     /**
      * 储存主键ID
      * @param string $localKey 当前主键
      */
-    public static function set($localKey)
+    public static function set($tableName, $localKey)
     {
         // 储存主键ID
-        array_push(self::$bufferID, $localKey);
+//        array_push(self::$bufferID[$tableName], $localKey);
+        self::$bufferID[$tableName][] = $localKey;
+        self::$num[$tableName] = 0;
     }
 
     /**
@@ -41,45 +43,45 @@ class Buffer
      * @param string $relation 关联关系
      * @return array
      */
-    public static function get($foreignKey, $localKey, $relation)
+    public static function get($tableName, $foreignKey, $localKey, $relation)
     {
         // 累计调用次数
-        self::$num++;
+        self::$num[$tableName]++;
         // hasMany 多维数组
         $data = [];
         // hasOne 一维数组
         $detail = [];
         if ($relation === 'hasMany') {
-            foreach (self::$bufferData['cache'] as $key => $val) {
+            foreach (self::$bufferData[$tableName] as $key => $val) {
                 if ($val[$foreignKey] === $localKey) {
-                    $data[] = $val;
+                    $data[$tableName][] = $val;
                     //unset(self::$bufferData['cache'][$key]);// 清除已被返回的数组
                 }
             }
-            if (empty($data)) {
+            if (empty($data[$tableName])) {
                 return null;
             }
-            if (count(self::$bufferID) === self::$num) {
-                self::$num = 0;
-                self::$bufferID = [];
-                self::$bufferData = [];
+            if (count(self::$bufferID[$tableName]) === self::$num[$tableName]) {
+                self::$num[$tableName] = 0;
+                self::$bufferID[$tableName] = [];
+                self::$bufferData[$tableName] = [];
             }
-            return $data;
+            return $data[$tableName];
         } else {
-            foreach (self::$bufferData['cache'] as $key => $val) {
+            foreach (self::$bufferData[$tableName] as $key => $val) {
                 if ($val[$foreignKey] === $localKey) {
-                    $detail = $val;
+                    $detail[$tableName] = $val;
                 }
             }
-            if (empty($detail)) {
+            if (empty($detail[$tableName])) {
                 return null;
             }
-            if (count(self::$bufferID) === self::$num) {
-                self::$num = 0;
-                self::$bufferID = [];
-                self::$bufferData = [];
+            if (count(self::$bufferID[$tableName]) === self::$num[$tableName]) {
+                self::$num[$tableName] = 0;
+                self::$bufferID[$tableName] = [];
+                self::$bufferData[$tableName] = [];
             }
-            return $detail;
+            return $detail[$tableName];
         }
     }
 
@@ -93,14 +95,20 @@ class Buffer
     public static function loadBuffered($tableName, $foreignKey)
     {
 
-        if (array_key_exists('cache', self::$bufferData)) {
-            if (empty(self::$bufferData['cache'])) {
-                self::$bufferData['cache'] = Db::name($tableName)->where($foreignKey, 'in', self::$bufferID)->select();
+        if (array_key_exists($tableName, self::$bufferData)) {
+            if (empty(self::$bufferData[$tableName])) {
+                self::$bufferData[$tableName] = Db::name($tableName)
+                    ->where($foreignKey, 'in', self::$bufferID[$tableName])
+                    ->where('is_delete', '=', 0)
+                    ->select();
             } else {
                 return;
             }
         } else {
-            self::$bufferData['cache'] = Db::name($tableName)->where($foreignKey, 'in', self::$bufferID)->select();
+            self::$bufferData[$tableName] = Db::name($tableName)
+                ->where($foreignKey, 'in', self::$bufferID[$tableName])
+                ->where('is_delete', '=', 0)
+                ->select();
         }
     }
 }

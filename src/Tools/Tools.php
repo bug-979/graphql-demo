@@ -106,12 +106,12 @@ class Tools
             if (array_key_exists($localKey, $data)) {
                 $key = $data[$localKey];
                 // 先把所有ID存起来然后用 in [] 查询多个id
-                Buffer::set($key);
+                Buffer::set($tableName, $key);
                 return new Deferred(function () use ($tableName, $foreignKey, $key) {
                     // 执行 in [] 查询
                     Buffer::loadBuffered($tableName, $foreignKey);
                     // 获取对应的关联数据
-                    return Buffer::get($foreignKey, $key, 'hasMany');
+                    return Buffer::get($tableName, $foreignKey, $key, 'hasMany');
                 });
             } else {
                 self::gqlErrors('类的属性不存在:' . $localKey);
@@ -134,12 +134,12 @@ class Tools
             if (array_key_exists($localKey, $data)) {
                 $key = $data[$localKey];
                 // 先把所有ID存起来然后用 in [] 查询多个id
-                Buffer::set($key);
+                Buffer::set($tableName, $key);
                 return new Deferred(function () use ($tableName, $foreignKey, $key) {
                     // 执行 in [] 查询
                     Buffer::loadBuffered($tableName, $foreignKey);
                     // 获取对应的关联数据
-                    return Buffer::get($foreignKey, $key, 'hasOne');
+                    return Buffer::get($tableName, $foreignKey, $key, 'hasOne');
                 });
             } else {
                 self::gqlErrors('类的属性不存在:' . $localKey);
